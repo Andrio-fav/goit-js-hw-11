@@ -6,10 +6,13 @@ const gallery = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 
-export function renderGallery(images) {
+export function renderGallery(images, isNewSearch = false) {
   const galleryContainer = document.querySelector('.gallery');
 
-  galleryContainer.innerHTML = '';
+  // Якщо це новий пошук, очищуємо галерею
+  if (isNewSearch) {
+    galleryContainer.innerHTML = '';
+  }
 
   const markup = images
     .map(
@@ -30,5 +33,5 @@ export function renderGallery(images) {
 
   galleryContainer.insertAdjacentHTML('beforeend', markup);
 
-  gallery.refresh();
+  gallery.refresh(); // Оновлюємо SimpleLightbox
 }
