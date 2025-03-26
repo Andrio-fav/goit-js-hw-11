@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-export function searchImage(request) {
-    const API_KEY = '49486795-430aa06a6e639b9f88254bdb1'; // Вставити свій API ключ
-    const URL =
-      'https://pixabay.com/api/?key=' +
-      API_KEY +
-      '&q=' +
-      encodeURIComponent(request) +
-      '&image_type=photo' +
-      '&orientation=horizontal' +
-      '&safesearch=true';
+const API_KEY = 'your_api_key_here';  // Замінити на твій ключ API
+
+export async function searchImage(query) {
+  const URL = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&orientation=horizontal&safesearch=true&per_page=15`;
   
-    return axios.get(URL).then(response => [...response.data.hits]);
+  try {
+    const response = await axios.get(URL);
+    return response.data.hits;  // Повертає масив зображень
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    throw new Error('Failed to fetch images.');
   }
+}
