@@ -1,18 +1,17 @@
-const form = document.querySelector('.form');
-const galleryHTML = document.querySelector('.gallery');
-const loadMoreBtn = document.querySelector('.load-more');
-const loader = document.querySelector('.loader');
+import { searchImage } from './js/pixabay-api';  
+import { renderGallery } from './js/render-functions';
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
 
-if (!form || !galleryHTML || !loadMoreBtn || !loader) {
-  console.error('❌ Помилка: один з елементів не знайдено! Перевір HTML.');
-}
+const galleryHTML = document.querySelector('.gallery');
+const form = document.querySelector('.form');
 
 form.addEventListener('submit', handleClick);
 
 function handleClick(event) {
   event.preventDefault();
 
-  const request = form.elements.request.value.trim(); // тут доступ до поля 'request'
+  const request = form.elements.request.value.trim();
   if (!request) {
     iziToast.warning({
       message: 'Please enter a search query!',
@@ -25,11 +24,11 @@ function handleClick(event) {
   form.elements.button.disabled = true; // Disable submit button
   form.lastElementChild.classList.remove('hidden'); // Show loader
 
-  searchImage(request)
+  searchImage(request)  // Тепер викликається searchImage
     .then(images => {
       if (images.length > 0) {
         form.elements.request.value = ''; // Clear the input field
-        renderGallery(images); // Тепер передається renderGallery
+        renderGallery(images); // Рендеримо зображення
       } else {
         throw new Error('Sorry, no images found. Please try again!');
       }
