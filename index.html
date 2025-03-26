@@ -15,14 +15,14 @@
     <main>
       <div class="container">
         <form class="form">
-          <label>
-            <input name="request" placeholder="Search images..." required />
-          </label>
+          <input type="text" name="request" placeholder="Search images..." required />
           <button type="submit" name="button">Search</button>
-          <p class="loading-text hidden"><span class="loader"></span>Loading images, please wait...</p>
         </form>
-        <ul class="gallery">
-        </ul>
+        
+        <ul class="gallery"></ul>
+        
+        <button class="load-more hidden">Load more</button>
+        <div class="loader hidden">Loading...</div>
       </div>
     </main>
 
