@@ -9,87 +9,55 @@ iziToast.settings({
   messageColor: '#fff',
 });
 
-const galleryHTML = document.querySelector('.gallery');
-const form = document.querySelector('.form');
-const loadMoreBtn = document.querySelector('.load-more'); // Додаємо кнопку
+document.addEventListener('DOMContentLoaded', () => {
+  const galleryHTML = document.querySelector('.gallery');
+  const form = document.querySelector('.form');
+  const submitButton = form.querySelector('button'); // Оновлено
+  const loader = form.lastElementChild; // Індикатор завантаження
 
-let request = '';
-let page = 1;
-
-form.addEventListener('submit', handleSubmit);
-loadMoreBtn.addEventListener('click', loadMoreImages);
-
-function handleSubmit(event) {
-  event.preventDefault();
-
-  request = form.elements.request.value.trim();
-  if (!request) {
-    iziToast.warning({
-      message: 'Please enter a search query!',
-    });
+  if (!form) {
+    console.error("Form element not found");
     return;
   }
 
-  page = 1;
-  galleryHTML.innerHTML = '';
-  form.elements.request.setAttribute('readonly', true);
-  form.elements.button.disabled = true;
-  form.lastElementChild.classList.remove('hidden');
-  loadMoreBtn.classList.add('hidden'); // Ховаємо кнопку перед новим пошуком
+  form.addEventListener('submit', handleClick);
 
-  searchImage(request, page)
-    .then(({ hits, totalHits }) => {
-      if (hits.length === 0) {
-        throw new Error('Sorry, no images found. Please try again!');
-      }
-
-      renderGallery(hits);
-      if (totalHits > 15) {
-        loadMoreBtn.classList.remove('hidden'); // Показуємо кнопку "Load more"
-      }
-    })
-    .catch(error => {
-      iziToast.error({
-        message: error.message,
+  function handleClick(event) {
+    event.preventDefault();
+    
+    const request = form.elements.request.value.trim();
+    if (!request) {
+      iziToast.warning({
+        message: 'Please enter a search query!',
       });
-    })
-    .finally(() => {
-      form.elements.request.removeAttribute('readonly');
-      form.elements.button.disabled = false;
-      form.lastElementChild.classList.add('hidden');
-    });
-}
+      return;
+    }
 
-function loadMoreImages() {
-  page += 1;
-  loadMoreBtn.disabled = true;
+    galleryHTML.innerHTML = ''; // Очистка галереї
+    form.elements.request.setAttribute('readonly', true);
+    submitButton.disabled = true;
+    loader.classList.remove('hidden');
 
-  searchImage(request, page)
-    .then(({ hits, totalHits }) => {
-      if (hits.length === 0) {
-        iziToast.info({
-          message: "We're sorry, but you've reached the end of search results.",
+    searchImage(request)
+      .then(images => {
+        if (images.length > 0) {
+          form.elements.request.value = '';
+          renderGallery(images, galleryHTML);
+        } else {
+          throw new Error('Sorry, no images found. Please try again!');
+        }
+      })
+      .catch(error => {
+        iziToast.error({
+          iconUrl: 'img/error.svg',
+          message: error.message,
         });
-        loadMoreBtn.classList.add('hidden');
-        return;
-      }
-
-      renderGallery(hits);
-
-      const totalPages = Math.ceil(totalHits / 15);
-      if (page >= totalPages) {
-        loadMoreBtn.classList.add('hidden');
-        iziToast.info({
-          message: "We're sorry, but you've reached the end of search results.",
-        });
-      }
-    })
-    .catch(error => {
-      iziToast.error({
-        message: error.message,
+      })
+      .finally(() => {
+        form.elements.request.removeAttribute('readonly');
+        submitButton.disabled = false;
+        loader.classList.add('hidden');
       });
-    })
-    .finally(() => {
-      loadMoreBtn.disabled = false;
-    });
-}
+  }
+});
+
