@@ -8,21 +8,21 @@
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
-    
+  
     <main>
       <div class="container">
         <form class="form">
-          <input type="text" name="request" placeholder="Search images..." required />
+          <label>
+            <input name="request" placeholder="Search images..." required />
+          </label>
           <button type="submit" name="button">Search</button>
+          <p class="loading-text hidden"><span class="loader"></span>Loading images, please wait...</p>
         </form>
-                
-        <ul class="gallery"></ul>
-        
-        <button class="load-more hidden">Load more</button>
-        <div class="loader hidden">Loading...</div>
+        <ul class="gallery">
+        </ul>
       </div>
     </main>
-
+  
     <script type="module" src="./main.js"></script>
   </body>
 </html>
