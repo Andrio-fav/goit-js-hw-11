@@ -1,7 +1,13 @@
-import { searchImage } from './js/pixabay-api';  
-import { renderGallery } from './js/render-functions';
+import { searchImage } from './js/pixabay-api';
+import { renderGallary } from './js/render-functions';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
+
+iziToast.settings({
+  position: 'topRight',
+  iconColor: '#fff',
+  messageColor: '#fff',
+});
 
 const galleryHTML = document.querySelector('.gallery');
 const form = document.querySelector('.form');
@@ -10,27 +16,25 @@ form.addEventListener('submit', handleClick);
 
 function handleClick(event) {
   event.preventDefault();
-
   const request = form.elements.request.value.trim();
-  if (!request) {
-    iziToast.warning({
-      message: 'Please enter a search query!',
-    });
+  if (request == '') {
     return;
   }
+  galleryHTML.innerHTML = '';
+  form.elements.request.setAttribute('readonly', true); //readonly for input
+  form.elements.button.disabled = true; //disable button
+  form.lastElementChild.classList.remove('hidden'); //show loader text
 
-  galleryHTML.innerHTML = ''; // Clear previous results
-  form.elements.request.setAttribute('readonly', true); // Disable input
-  form.elements.button.disabled = true; // Disable submit button
-  form.lastElementChild.classList.remove('hidden'); // Show loader
-
-  searchImage(request)  // Тепер викликається searchImage
+  searchImage(request)
     .then(images => {
-      if (images.length > 0) {
-        form.elements.request.value = ''; // Clear the input field
-        renderGallery(images); // Рендеримо зображення
+      // console.log('response', images);
+      if (images.length !== 0) {
+        form.elements.request.value = '';
+        renderGallary(images, galleryHTML);
       } else {
-        throw new Error('Sorry, no images found. Please try again!');
+        throw new Error(
+          'Sorry, there are no images matching your search query. Please, try again!'
+        );
       }
     })
     .catch(error => {
@@ -40,8 +44,8 @@ function handleClick(event) {
       });
     })
     .finally(() => {
-      form.elements.request.removeAttribute('readonly'); // Restore input
-      form.elements.button.disabled = false; // Enable button
-      form.lastElementChild.classList.add('hidden'); // Hide loader
+      form.request.removeAttribute('readonly'); // Restore elements
+      form.elements.button.disabled = false; //  state
+      form.lastElementChild.classList.add('hidden'); // hide loader text
     });
 }
