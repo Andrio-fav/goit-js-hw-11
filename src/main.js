@@ -1,5 +1,5 @@
 import { searchImage } from './js/pixabay-api';
-import { renderGallary } from './js/render-functions';
+import { renderGallery } from './js/render-functions';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
@@ -11,41 +11,85 @@ iziToast.settings({
 
 const galleryHTML = document.querySelector('.gallery');
 const form = document.querySelector('.form');
+const loadMoreBtn = document.querySelector('.load-more'); // Додаємо кнопку
 
-form.addEventListener('submit', handleClick);
+let request = '';
+let page = 1;
 
-function handleClick(event) {
+form.addEventListener('submit', handleSubmit);
+loadMoreBtn.addEventListener('click', loadMoreImages);
+
+function handleSubmit(event) {
   event.preventDefault();
-  const request = form.elements.request.value.trim();
-  if (request == '') {
+
+  request = form.elements.request.value.trim();
+  if (!request) {
+    iziToast.warning({
+      message: 'Please enter a search query!',
+    });
     return;
   }
-  galleryHTML.innerHTML = '';
-  form.elements.request.setAttribute('readonly', true); //readonly for input
-  form.elements.button.disabled = true; //disable button
-  form.lastElementChild.classList.remove('hidden'); //show loader text
 
-  searchImage(request)
-    .then(images => {
-      // console.log('response', images);
-      if (images.length !== 0) {
-        form.elements.request.value = '';
-        renderGallary(images, galleryHTML);
-      } else {
-        throw new Error(
-          'Sorry, there are no images matching your search query. Please, try again!'
-        );
+  page = 1;
+  galleryHTML.innerHTML = '';
+  form.elements.request.setAttribute('readonly', true);
+  form.elements.button.disabled = true;
+  form.lastElementChild.classList.remove('hidden');
+  loadMoreBtn.classList.add('hidden'); // Ховаємо кнопку перед новим пошуком
+
+  searchImage(request, page)
+    .then(({ hits, totalHits }) => {
+      if (hits.length === 0) {
+        throw new Error('Sorry, no images found. Please try again!');
+      }
+
+      renderGallery(hits);
+      if (totalHits > 15) {
+        loadMoreBtn.classList.remove('hidden'); // Показуємо кнопку "Load more"
       }
     })
     .catch(error => {
       iziToast.error({
-        iconUrl: 'img/error.svg',
         message: error.message,
       });
     })
     .finally(() => {
-      form.request.removeAttribute('readonly'); // Restore elements
-      form.elements.button.disabled = false; //  state
-      form.lastElementChild.classList.add('hidden'); // hide loader text
+      form.elements.request.removeAttribute('readonly');
+      form.elements.button.disabled = false;
+      form.lastElementChild.classList.add('hidden');
+    });
+}
+
+function loadMoreImages() {
+  page += 1;
+  loadMoreBtn.disabled = true;
+
+  searchImage(request, page)
+    .then(({ hits, totalHits }) => {
+      if (hits.length === 0) {
+        iziToast.info({
+          message: "We're sorry, but you've reached the end of search results.",
+        });
+        loadMoreBtn.classList.add('hidden');
+        return;
+      }
+
+      renderGallery(hits);
+
+      const totalPages = Math.ceil(totalHits / 15);
+      if (page >= totalPages) {
+        loadMoreBtn.classList.add('hidden');
+        iziToast.info({
+          message: "We're sorry, but you've reached the end of search results.",
+        });
+      }
+    })
+    .catch(error => {
+      iziToast.error({
+        message: error.message,
+      });
+    })
+    .finally(() => {
+      loadMoreBtn.disabled = false;
     });
 }
